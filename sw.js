@@ -2,7 +2,7 @@
    SERVICE WORKER — Chiranupong K PWA
    ============================================= */
 
-const CACHE_NAME = 'chiranupong-v1';
+const CACHE_NAME = 'chiranupong-v2';
 
 // ไฟล์ที่จะ cache ไว้ใช้ offline
 const CACHE_FILES = [
