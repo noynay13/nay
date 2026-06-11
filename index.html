@@ -1724,28 +1724,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-/* ── Install prompt (Android Chrome) ── */
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  // แสดง toast แนะนำให้ติดตั้ง
-  const t = document.getElementById('toast');
-  t.innerHTML = '📲 กด <strong style="color:var(--gold)">ติดตั้ง</strong> เพื่อใช้งานเป็นแอพ &nbsp;<button onclick="installPWA()" style="background:var(--gold);color:#07080f;border:none;border-radius:6px;padding:.2rem .6rem;font-size:.72rem;cursor:pointer;margin-left:.3rem">ติดตั้ง</button>';
-  t.classList.add('show');
-  // ไม่ auto-hide เพื่อให้กดได้
-});
-
-function installPWA() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(choice => {
-    if (choice.outcome === 'accepted') showToast('ติดตั้งแอพเรียบร้อย ✓');
-    deferredPrompt = null;
-    document.getElementById('toast').classList.remove('show');
-  });
-}
 </script>
 </body>
 </html>
