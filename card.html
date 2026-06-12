@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>QR Card – Drak Nay</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#52C48A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#090B12;--s0:#0c0d17;--s1:#10131D;--s2:#161826;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);--muted:#5A6178;
+  --dim:#5A6178;--mid:#AAB0C0;--base:#AAB0C0;--hi:#F8F9FB;
+  --gold:#52C48A;--gold-lo:rgba(82,196,138,.12);
+  --gold-glow:rgba(82,196,138,.22);--gold-hi:#6FD4A0;
+  --r:10px;--r-lg:14px;--r-xl:18px;
+  --font:'Sarabun','Inter',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sh-md:0 4px 28px rgba(0,0,0,.6),0 1px 4px rgba(0,0,0,.4);
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{
+  --bg:#ECEEF5;--s0:#F4F6FC;--s1:#F4F6FC;--s2:#E7EAF2;
+  --border:rgba(0,0,0,0.14);--border2:rgba(0,0,0,0.24);--muted:#6B7280;
+  --dim:#6B7280;--mid:#374151;--base:#374151;--hi:#111827;
+  --gold:#2A9E68;--gold-lo:rgba(42,158,104,.10);
+  --gold-glow:rgba(42,158,104,.20);--gold-hi:#34B878;
+  --sh-md:0 4px 28px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06);
+}
+body{transition:background .3s var(--ease),color .3s var(--ease)}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--base);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+}
+
+/* ── HEADER (same as timetable) ── */
+.hdr{
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:1.1rem 1.4rem 1rem;
+  position:relative;overflow:hidden;
+}
+.hdr::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--gold) 40%,var(--gold-hi) 55%,var(--gold) 70%,transparent 100%);
+}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.hdr-brand{display:flex;align-items:center;gap:.7rem}
+.hdr-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold) 0%,rgba(82,196,138,.3) 100%);
+  border:1px solid rgba(82,196,138,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;
+  box-shadow:0 0 16px var(--gold-glow);
+}
+.hdr-eyebrow{
+  font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--gold);
+}
+.hdr-title{font-size:.95rem;font-weight:700;color:var(--hi);margin-top:.1rem}
+
+.back-btn{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.32rem .85rem;border-radius:20px;
+  border:1px solid var(--border2);background:var(--s2);
+  font-size:.68rem;font-family:var(--mono);
+  color:var(--mid);cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+  letter-spacing:.04em;text-decoration:none;
+}
+.back-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-lo)}
+.theme-btn{
+  width:32px;height:32px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border2);background:var(--s2);
+  color:var(--mid);transition:all .18s;flex-shrink:0;
+}
+.theme-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── MAIN ── */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:3rem 1.5rem 3rem;
+  gap:1.8rem;
+}
+
+/* ── EYEBROW ── */
+.eyebrow{
+  font-family:var(--mono);font-size:.65rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);text-align:center;
+}
+
+/* ── FLIP CARD ── */
+.scene{
+  width:520px;height:290px;
+  perspective:1200px;
+  cursor:pointer;
+}
+@media(max-width:580px){
+  .scene{width:92vw;height:calc(92vw * (290/520))}
+}
+
+.card-inner{
+  width:100%;height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .75s cubic-bezier(.4,.2,.2,1);
+}
+.scene.flipped .card-inner{transform:rotateY(180deg)}
+
+.card-face{
+  position:absolute;width:100%;height:100%;
+  backface-visibility:hidden;
+  border-radius:18px;overflow:hidden;
+  border:1px solid rgba(82,196,138,.25);
+  box-shadow:0 0 32px rgba(82,196,138,.14);
+}
+.card-face img{width:100%;height:100%;object-fit:cover;display:block}
+.back{transform:rotateY(180deg)}
+
+/* ── HINT ── */
+.hint{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.08em;color:var(--dim);
+}
+.hint-icon{
+  animation:spin 2.6s linear infinite;
+  display:inline-block;transform-origin:center;
+}
+@keyframes spin{
+  0%{transform:rotate(0deg);opacity:.35}
+  50%{opacity:1}
+  100%{transform:rotate(360deg);opacity:.35}
+}
+
+/* ── FOOTER ── */
+.footer{
+  border-top:1px solid var(--border);
+  padding:.85rem 1.4rem;
+  text-align:center;
+  font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.1em;color:var(--muted);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-brand">
+      <div class="hdr-icon">📇</div>
+      <div>
+        <div class="hdr-eyebrow">QR CARD</div>
+        <div class="hdr-title">Drak Nay</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" title="เปลี่ยน Theme">
+        <svg id="theme-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="index.html" class="back-btn">← ตารางเรียน</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="eyebrow">แตะการ์ดเพื่อพลิก</div>
+
+  <div class="scene" id="card">
+    <div class="card-inner">
+      <div class="card-face front">
+        <img src="images/front.png" alt="Front Card">
+      </div>
+      <div class="card-face back">
+        <img src="images/back.png" alt="Back Card – QR Code">
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    <span class="hint-icon">↻</span>
+    <span id="hint-text">พลิกดู QR Code</span>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">DRAK NAY &nbsp;·&nbsp; © 2025</div>
+
+<script>
+/* THEME — sync กับ index.html (localStorage key: sc_th) */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const p=document.getElementById('theme-ico');
+  p.querySelector('path').setAttribute('d',t==='light'
+    ?'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 5a7 7 0 1 0 0 14A7 7 0 0 0 12 5z'
+    :'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z');
+}
+function toggleTheme(){
+  const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  applyTheme(t);localStorage.setItem('sc_th',t);
+}
+applyTheme(localStorage.getItem('sc_th')||'dark');
+
+const card     = document.getElementById('card');
+const hintText = document.getElementById('hint-text');
+card.addEventListener('click', () => {
+  const flipped = card.classList.toggle('flipped');
+  hintText.textContent = flipped ? 'พลิกกลับด้านหน้า' : 'พลิกดู QR Code';
+});
+</script>
+</body>
+</html>
