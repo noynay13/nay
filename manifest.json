@@ -1,7 +1,7 @@
 {
-  "name": "Drak Nay",
+  "name": "NØYNAY",
   "short_name": "ตารางเรียน",
-  "description": "ตารางเรียนและ QR Card ของ Drak Nay",
+  "description": "ตารางเรียนและ QR Card ของ NØYNAY",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

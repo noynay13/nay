@@ -1,8 +1,8 @@
 /* =============================================
-   SERVICE WORKER — Drak Nay PWA
+   SERVICE WORKER — NØYNAY PWA
    ============================================= */
 
-const CACHE_NAME = 'draknay-v1';
+const CACHE_NAME = 'noynay-v1';
 
 // ไฟล์ที่จะ cache ไว้ใช้ offline
 const CACHE_FILES = [

@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Drak Nay — Schedule</title>
+<title>NØYNAY — Schedule</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#52C48A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Drak Nay">
+<meta name="apple-mobile-web-app-title" content="NØYNAY">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -125,13 +125,19 @@ body.em .hero-sem[contenteditable="true"]{border-bottom:1px dashed var(--border2
 .sec-title{font-size:.65rem;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:.55rem}
 .sec-title::before{content:'';width:14px;height:2px;background:var(--gold);border-radius:2px}
 
-/* CAP BAR */
-.cap-bar{display:flex;align-items:center;gap:.45rem;margin-bottom:.85rem;flex-wrap:wrap}
-.cap-lbl{font-size:.58rem;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-right:.2rem}
-.cap-btn{display:flex;align-items:center;gap:.32rem;padding:.32rem .72rem;border-radius:8px;border:1px solid var(--border2);background:var(--card);font-size:.72rem;font-weight:500;color:var(--text2);transition:all .15s;cursor:pointer;white-space:nowrap;font-family:var(--font)}
-.cap-btn:hover{border-color:var(--gold);color:var(--gold)}
-.cap-btn.off{background:var(--gold-dim);border-color:rgba(82,196,138,.4);color:var(--gold)}
-.cap-btn svg{width:11px;height:11px;flex-shrink:0}
+/* ZOOM BTN */
+.zoom-btn{display:flex;align-items:center;gap:.38rem;padding:.32rem .72rem;border-radius:8px;border:1px solid var(--border2);background:var(--card);font-size:.72rem;font-weight:500;color:var(--text2);transition:all .15s;cursor:pointer;white-space:nowrap;font-family:var(--font)}
+.zoom-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.zoom-btn svg{width:13px;height:13px;flex-shrink:0}
+/* ZOOM OVERLAY */
+.zoom-ov{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s var(--ease)}
+.zoom-ov.op{opacity:1;pointer-events:all}
+.zoom-close{position:fixed;top:.9rem;right:.9rem;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;cursor:pointer;transition:all .15s;z-index:2}
+.zoom-close:hover{background:rgba(228,106,106,.2);border-color:rgba(228,106,106,.5);color:var(--danger)}
+.zoom-stage{display:flex;align-items:center;justify-content:center;width:100vw;height:100vh;overflow:hidden;position:relative}
+#zoom-tt-inner{transform-origin:center center;will-change:transform;position:absolute}
+#zoom-tt-inner .tt-scroll{overflow:visible!important}
+#zoom-tt-inner .tt{min-width:unset!important}
 
 /* ── TIMETABLE — grid ตามสัดส่วนเวลาจริง (08:00–19:00) ── */
 .tt-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:1.25rem}
@@ -308,13 +314,11 @@ body.em #fab{display:flex}
   .nav{display:none}
   .clock{display:none}
   .bnav{display:flex}
-  .footer{padding:1.5rem 1rem}
+  .footer{padding:1.5rem 1rem 6rem}
   .tt-day-label{position:sticky;left:0;z-index:5}
 }
 
-/* CAP ROTATE */
-.tt-rot-outer{transition:height .3s var(--ease)}
-.tt-wrap{transition:transform .3s var(--ease);transform-origin:top left}
+
 @media(max-width:600px){
   .stats{gap:.6rem}
   .scard{padding:.85rem 1rem}
@@ -342,7 +346,7 @@ body:not(.em) .lane-cell{cursor:default}
     </div>
     <div class="brand-txt">
       <div class="n1">Schedule</div>
-      <div class="n2">Drak Nay</div>
+      <div class="n2">NØYNAY</div>
     </div>
   </div>
   <nav class="nav">
@@ -381,36 +385,28 @@ body:not(.em) .lane-cell{cursor:default}
     <div class="hero-info">
       <div class="hero-badge">Academic — Active</div>
       <div class="hero-name" id="hero-sem" contenteditable="false" oninput="save()">ภาคการศึกษาที่ 1 / 2567</div>
-      <div class="hero-sem" id="hero-name" contenteditable="false" oninput="save()">Drak Nay</div>
+      <div class="hero-sem" id="hero-name" contenteditable="false" oninput="save()">NØYNAY</div>
     </div>
-  </div>
-
-  <!-- CAP BAR -->
-  <div class="cap-bar">
-    <button class="cap-btn" id="cap-all-btn" onclick="capToggleAll()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-      โหมดแคปหน้าจอ
-    </button>
-    <button class="cap-btn" id="cap-rotate-btn" onclick="capRotateTT()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      หมุนตาราง
-    </button>
   </div>
 
   <!-- TIMETABLE -->
   <div class="sec-hdr" id="tt-sec">
     <div class="sec-title">ตารางเรียน</div>
+    <button class="zoom-btn" onclick="openZoom()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+      ขยายตาราง
+    </button>
   </div>
-  <div id="tt-rot-outer">
-    <div class="tt-wrap" id="tt-wrap">
+  <div class="tt-wrap" id="tt-wrap">
       <div class="tt-scroll">
         <div class="tt">
           <div class="tt-head" id="tt-head"></div>
           <div id="tt-body"></div>
         </div>
       </div>
-    </div>
   </div>
+
+
 
   <!-- STATS -->
   <div class="stats">
@@ -442,7 +438,7 @@ body:not(.em) .lane-cell{cursor:default}
 <!-- FOOTER -->
 <footer>
   <div class="footer">
-    <div class="footer-cr">Made with passion by <strong>Drak Nay</strong></div>
+    <div class="footer-cr">Made with passion by <strong>NØYNAY</strong></div>
     <div class="footer-lks">
       <a href="https://www.facebook.com/chiranupong/" target="_blank" class="footer-lk">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook
@@ -475,6 +471,24 @@ body:not(.em) .lane-cell{cursor:default}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไข
   </div>
 </nav>
+
+
+<!-- ZOOM OVERLAY -->
+<div class="zoom-ov" id="zoom-ov" onclick="closeZoom()">
+  <button class="zoom-close" onclick="closeZoom()">✕</button>
+  <div class="zoom-stage">
+    <div id="zoom-tt-inner">
+      <div class="tt-wrap" style="border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;background:var(--card)">
+        <div class="tt-scroll" style="overflow:visible">
+          <div class="tt">
+            <div class="tt-head" id="zoom-tt-head"></div>
+            <div id="zoom-tt-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <button id="fab" onclick="openModal(null)">+</button>
 
@@ -682,10 +696,10 @@ function renderGrid(){
       if(r<=0||l>=1)return;
       const cls=COLORMAP[c.color]||'cm';
       bh+=`<div class="cb ${cls}" style="left:calc(${l*100}% + 3px);width:calc(${(r-l)*100}% - 6px)" onclick="event.stopPropagation();onBlk(${c.id})">
-        <div class="cb-code">${esc(c.code)}</div>
+        <div class="cb-room">${esc(c.room||'—')}</div>
         <div class="cb-name">${esc(c.name)}</div>
         <div class="cb-time">${c.start}–${c.end}</div>
-        <div class="cb-room">${esc(c.room||'—')}</div>
+        <div class="cb-code">${esc(c.code)}</div>
       </div>`;
     });
 
@@ -811,46 +825,29 @@ async function chkPin(){
   }
 }
 
-/* CAP TOGGLE */
-let capActive = false;
-const capEls = () => [
-  document.querySelector('.topbar'),
-  document.querySelector('.hero'),
-  document.querySelector('.stats'),
-  document.querySelector('.view-bar'),
-].filter(Boolean);
-function capToggleAll(){
-  capActive = !capActive;
-  capEls().forEach(el => el.style.display = capActive ? 'none' : '');
-  const btn = document.getElementById('cap-all-btn');
-  btn.classList.toggle('off', capActive);
-  btn.querySelector('svg').style.opacity = capActive ? '1' : '';
-  btn.childNodes[2].textContent = capActive ? ' คืนค่า' : ' โหมดแคปหน้าจอ';
+/* ZOOM */
+function openZoom(){
+  // Copy rendered timetable into zoom container
+  document.getElementById('zoom-tt-head').innerHTML = document.getElementById('tt-head').innerHTML;
+  document.getElementById('zoom-tt-body').innerHTML = document.getElementById('tt-body').innerHTML;
+  document.getElementById('zoom-ov').classList.add('op');
+  // Calculate rotate+scale to fit entire timetable on screen without scroll
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const inner = document.getElementById('zoom-tt-inner');
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // Measure the natural (unrotated) size
+      inner.style.transform = 'none';
+      const W = inner.offsetWidth || 700;
+      const H = inner.offsetHeight || 200;
+      // After rotate(90deg): visual width = H, visual height = W
+      const scale = Math.min(vw / H, vh / W) * 0.92;
+      inner.style.transform = `rotate(90deg) scale(${scale})`;
+    });
+  });
 }
-
-/* CAP ROTATE */
-let capRotated = false;
-function capRotateTT(){
-  const wrap = document.getElementById('tt-wrap');
-  const outer = document.getElementById('tt-rot-outer');
-  const btn = document.getElementById('cap-rotate-btn');
-  capRotated = !capRotated;
-  if(capRotated){
-    const w = wrap.offsetWidth;
-    const h = wrap.offsetHeight;
-    wrap.style.transformOrigin = '0 0';
-    wrap.style.transform = `rotate(90deg) translateY(-${h}px)`;
-    outer.style.height = w + 'px';
-    outer.style.width  = h + 'px';
-  } else {
-    wrap.style.transform = '';
-    wrap.style.transformOrigin = '';
-    outer.style.height = '';
-    outer.style.width  = '';
-  }
-  btn.classList.toggle('off', capRotated);
-  btn.childNodes[2].textContent = capRotated ? ' คืนค่า' : ' หมุนตาราง';
-}
+function closeZoom(){document.getElementById('zoom-ov').classList.remove('op')}
 
 /* RENDER ALL */
 function renderAll(){upStats();renderGrid();renderCC();}
