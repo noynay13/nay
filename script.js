@@ -113,6 +113,8 @@ function upStats(){
 /* ── TIMETABLE RENDER ── */
 function renderGrid(){
   const today=new Date().getDay();
+  const now=new Date();
+  const curMin=now.getHours()*60+now.getMinutes();
   const G_START=8*60, G_END=19*60, SPAN=G_END-G_START, COLS=11;
 
   let hh=`<div class="th-cell first"></div>`;
@@ -131,8 +133,9 @@ function renderGrid(){
       const l=Math.max(0,(t2m(c.start)-G_START)/SPAN);
       const r=Math.min(1,(t2m(c.end)-G_START)/SPAN);
       if(r<=0||l>=1)return;
+      const isNow=c.day===today&&curMin>=t2m(c.start)&&curMin<t2m(c.end);
       const {cls,style}=getStyle(c);
-      bh+=`<div class="cb ${cls}" style="left:calc(${l*100}% + 3px);width:calc(${(r-l)*100}% - 6px);${style}" onclick="event.stopPropagation();onBlk(${c.id})">
+      bh+=`<div class="cb ${cls}${isNow?' cb-now':''}" style="left:calc(${l*100}% + 3px);width:calc(${(r-l)*100}% - 6px);${style}" onclick="event.stopPropagation();onBlk(${c.id})">
         <div class="cb-room">${esc(c.room||'—')}</div>
         <div class="cb-name">${esc(c.name)}</div>
         <div class="cb-time">${c.start}–${c.end}</div>
@@ -292,7 +295,14 @@ function openZoom(){
 function closeZoom(){document.getElementById('zoom-ov').classList.remove('op')}
 
 /* ── RENDER ALL ── */
-function renderAll(){upStats();renderGrid();renderCC();updateTimeLine();}
+function renderAll(){
+  upStats();renderGrid();renderCC();updateTimeLine();startCountdown();
+  /* auto-scroll วันนี้ให้มองเห็น */
+  setTimeout(()=>{
+    const todayRow=document.querySelector('.tt-row.tt-today');
+    if(todayRow)todayRow.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },350);
+}
 
 /* ── SERVICE WORKER ── */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
@@ -405,6 +415,7 @@ async function scheduleNotifs(){
   /* 1) Local setTimeout — ทำงานตลอดที่ page เปิดอยู่ */
   items.forEach(item => {
     notifTimers.push(setTimeout(() => {
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
       new Notification(item.title, {
         body  : item.body,
         icon  : './icons/icon-192.png',
@@ -522,3 +533,183 @@ document.addEventListener('click', e => {
   const btn = document.getElementById('notif-btn');
   if(pop && !pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) closeNotifPop();
 });
+
+/* ══════════════════════════════════════════════
+   NEW FEATURES v0.1.2
+   ══════════════════════════════════════════════ */
+
+/* ── COUNTDOWN TO NEXT CLASS ── */
+let _cdInterval = null;
+
+function _getNextClassInfo(){
+  const now = new Date();
+  const curMin = now.getHours()*60 + now.getMinutes();
+  const today = now.getDay();
+
+  /* คาบวันนี้ที่ยังไม่จบ */
+  const todayRem = courses
+    .filter(c => c.day===today && t2m(c.end)>curMin)
+    .sort((a,b)=>t2m(a.start)-t2m(b.start));
+
+  if(todayRem.length){
+    const c = todayRem[0];
+    const startMin = t2m(c.start);
+    if(curMin >= startMin){
+      /* กำลังเรียนอยู่ */
+      const remSec = (t2m(c.end)-curMin)*60 - now.getSeconds();
+      return {type:'now', course:c, remSec};
+    } else {
+      /* คาบต่อไปวันนี้ */
+      const remSec = (startMin-curMin)*60 - now.getSeconds();
+      return {type:'next', course:c, remSec};
+    }
+  }
+
+  /* หาคาบถัดไปในสัปดาห์ */
+  for(let d=1; d<=6; d++){
+    const dow = (today+d)%7;
+    const cls = courses.filter(c=>c.day===dow).sort((a,b)=>t2m(a.start)-t2m(b.start));
+    if(cls.length){
+      const c = cls[0];
+      const target = new Date(now);
+      target.setDate(target.getDate()+d);
+      const [h,m] = c.start.split(':').map(Number);
+      target.setHours(h,m,0,0);
+      const remSec = Math.max(0, Math.floor((target-now)/1000));
+      return {type:'future', course:c, remSec, days:d};
+    }
+  }
+  return null;
+}
+
+function _fmtTimer(sec){
+  if(sec<0) sec=0;
+  const h=Math.floor(sec/3600);
+  const m=Math.floor((sec%3600)/60);
+  const s=sec%60;
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+const _DAY_SHORT=['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+function updateCountdown(){
+  const card = document.getElementById('countdown-card');
+  if(!card) return;
+  const info = _getNextClassInfo();
+  if(!info || !courses.length){ card.style.display='none'; return; }
+
+  card.style.display='flex';
+  const icon  = document.getElementById('cd-icon');
+  const label = document.getElementById('cd-label');
+  const name  = document.getElementById('cd-name');
+  const meta  = document.getElementById('cd-meta');
+  const timer = document.getElementById('cd-timer');
+
+  if(info.type==='now'){
+    if(icon)  icon.textContent='🔴';
+    if(label) label.textContent='กำลังเรียนอยู่ — เหลืออีก';
+    card.classList.add('cd-active');
+  } else {
+    if(icon)  icon.textContent='📚';
+    const dayLabel = info.type==='future'
+      ? `คาบต่อไป (${_DAY_SHORT[info.course.day]})`
+      : 'คาบต่อไปวันนี้';
+    if(label) label.textContent=dayLabel;
+    card.classList.remove('cd-active');
+  }
+
+  if(name) name.textContent=info.course.name;
+  if(meta) meta.textContent=`${info.course.start}–${info.course.end}${info.course.room?' · '+info.course.room:''}`;
+  if(timer) timer.textContent=_fmtTimer(info.remSec);
+
+  /* ลด remSec ทีละวินาที */
+  info.remSec--;
+}
+
+function startCountdown(){
+  if(_cdInterval) clearInterval(_cdInterval);
+  updateCountdown();
+  _cdInterval = setInterval(updateCountdown, 1000);
+}
+
+/* ── INSTALL PROMPT ── */
+let _deferredInstall = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstall = e;
+  if(!localStorage.getItem('sc_install_dismissed')){
+    document.getElementById('install-banner')?.classList.add('show');
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  _deferredInstall = null;
+  document.getElementById('install-banner')?.classList.remove('show');
+  showToast('ติดตั้งแอปเรียบร้อย ✓');
+});
+
+async function doInstall(){
+  if(!_deferredInstall) return;
+  dismissInstall();
+  _deferredInstall.prompt();
+  const { outcome } = await _deferredInstall.userChoice;
+  _deferredInstall = null;
+  if(outcome==='accepted') showToast('ติดตั้งแล้ว ✓');
+}
+
+function dismissInstall(){
+  document.getElementById('install-banner')?.classList.remove('show');
+  localStorage.setItem('sc_install_dismissed','1');
+}
+
+/* ── PULL-TO-REFRESH ── */
+(()=>{
+  let startY=0, pulling=false, released=false;
+  const THRESHOLD=72;
+  const wrap = ()=>document.getElementById('ptr-wrap');
+  const txt  = ()=>document.getElementById('ptr-txt');
+
+  document.addEventListener('touchstart', e=>{
+    if(window.scrollY===0 && e.touches[0]) startY=e.touches[0].clientY;
+    else startY=0;
+    pulling=false; released=false;
+  },{passive:true});
+
+  document.addEventListener('touchmove', e=>{
+    if(!startY || released) return;
+    const dy = e.touches[0].clientY - startY;
+    if(dy<16) return;
+    pulling=true;
+    const el=wrap(); const t=txt();
+    if(!el) return;
+    el.classList.add('ptr-pulling');
+    el.classList.remove('ptr-loading');
+    if(t) t.textContent = dy>=THRESHOLD ? 'ปล่อยเพื่อรีเฟรช ↑' : 'ดึงเพื่อรีเฟรช ↓';
+    /* rotate spinner จาก progress */
+    const deg=Math.min(360, (dy/THRESHOLD)*360);
+    const svgEl=el.querySelector('svg');
+    if(svgEl) svgEl.style.transform=`rotate(${deg}deg)`;
+  },{passive:true});
+
+  document.addEventListener('touchend', e=>{
+    if(!pulling){startY=0;return;}
+    released=true;
+    const dy=(e.changedTouches[0]?.clientY||0)-startY;
+    const el=wrap(); const t=txt();
+    if(dy>=THRESHOLD){
+      if(el){ el.classList.add('ptr-loading'); el.classList.remove('ptr-pulling'); }
+      if(t) t.textContent='กำลังรีเฟรช...';
+      setTimeout(()=>{
+        renderAll();
+        showToast('รีเฟรชแล้ว ✓');
+        if(el){ el.classList.remove('ptr-loading','ptr-pulling'); }
+        startY=0; pulling=false; released=false;
+      },700);
+    } else {
+      if(el) el.classList.remove('ptr-pulling','ptr-loading');
+      startY=0; pulling=false; released=false;
+    }
+  },{passive:true});
+})();

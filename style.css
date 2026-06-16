@@ -356,3 +356,130 @@ body:not(.em) .lane-cell{cursor:default}
 .np-btn.off-state{background:rgba(228,106,106,.08);border-color:rgba(228,106,106,.3);color:var(--danger)}
 .np-btn.off-state:hover{background:var(--danger);color:#fff}
 #notif-btn.on{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+/* ══════════════════════════════════════════════
+   NEW FEATURES v0.1.2
+   ══════════════════════════════════════════════ */
+
+/* ── INSTALL BANNER ── */
+.install-banner{
+  display:none;
+  background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);
+  border-bottom:1px solid rgba(82,196,138,.2);
+  padding:.65rem 1.4rem;
+  position:relative;z-index:190;
+}
+.install-banner.show{display:block}
+.ib-inner{display:flex;align-items:center;gap:.7rem;max-width:1280px;margin:0 auto}
+.ib-ico{font-size:1.2rem;flex-shrink:0}
+.ib-txt{flex:1;min-width:0}
+.ib-t{font-size:.8rem;font-weight:600;color:var(--text1)}
+.ib-s{font-size:.65rem;color:var(--text3);margin-top:.08rem;font-family:var(--mono)}
+.ib-btn{
+  padding:.38rem .85rem;border-radius:9px;
+  background:var(--gold);color:#fff;font:600 .75rem var(--font);
+  white-space:nowrap;transition:filter .18s;flex-shrink:0;
+}
+[data-theme="dark"] .ib-btn{color:#090B12}
+.ib-btn:hover{filter:brightness(1.12)}
+.ib-x{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  border-radius:7px;border:1px solid var(--border2);color:var(--text3);
+  font-size:.7rem;flex-shrink:0;transition:all .15s;
+}
+.ib-x:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── PULL-TO-REFRESH ── */
+.ptr-wrap{
+  position:fixed;top:-64px;left:50%;transform:translateX(-50%);
+  z-index:300;display:flex;align-items:center;gap:.55rem;
+  background:var(--card);border:1px solid var(--border2);border-radius:24px;
+  padding:.5rem 1.1rem .5rem .75rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.35);
+  transition:top .3s cubic-bezier(.4,0,.2,1),opacity .3s;
+  pointer-events:none;opacity:0;
+}
+.ptr-wrap.ptr-pulling{top:12px;opacity:1}
+.ptr-wrap.ptr-loading{top:12px;opacity:1}
+.ptr-spinner svg{
+  color:var(--gold);display:block;
+  transition:transform .3s;
+}
+.ptr-wrap.ptr-loading .ptr-spinner svg{
+  animation:ptrSpin .7s linear infinite;
+}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
+.ptr-txt{font-size:.7rem;font-family:var(--mono);color:var(--text2);letter-spacing:.04em;white-space:nowrap}
+
+/* ── COUNTDOWN CARD ── */
+.countdown-card{
+  display:flex;align-items:center;gap:1rem;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1rem 1.3rem;margin-bottom:1rem;
+  position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.countdown-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.5;
+}
+.countdown-card.cd-active{
+  border-color:rgba(82,196,138,.35);
+  box-shadow:0 0 24px rgba(82,196,138,.1);
+}
+.countdown-card.cd-active::before{opacity:1}
+
+.cd-left{position:relative;flex-shrink:0}
+.cd-pulse{
+  position:absolute;inset:-4px;border-radius:50%;
+  background:var(--gold);opacity:0;
+  animation:none;
+}
+.cd-active .cd-pulse{
+  animation:cdPulse 2s ease-in-out infinite;
+}
+@keyframes cdPulse{
+  0%,100%{transform:scale(.85);opacity:0}
+  50%{transform:scale(1.5);opacity:.18}
+}
+.cd-icon{font-size:1.4rem;position:relative;z-index:1}
+
+.cd-info{flex:1;min-width:0}
+.cd-label{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:.22rem;
+}
+.cd-name{
+  font-size:.88rem;font-weight:600;color:var(--text1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cd-meta{font-size:.65rem;color:var(--text3);margin-top:.15rem;font-family:var(--mono)}
+
+.cd-timer{
+  font-family:var(--mono);font-size:1.55rem;font-weight:700;
+  color:var(--gold);letter-spacing:-.02em;flex-shrink:0;
+  text-shadow:0 0 20px var(--gold-glow);
+  min-width:90px;text-align:right;
+}
+.cd-active .cd-timer{color:var(--gold-hi)}
+
+/* ── TODAY HIGHLIGHT — active class block ── */
+.cb.cb-now{
+  outline:2px solid var(--gold);outline-offset:1px;
+  box-shadow:0 0 18px var(--gold-glow);z-index:3;
+}
+.cb.cb-now::after{
+  content:'● LIVE';
+  position:absolute;bottom:3px;right:5px;
+  font-family:var(--mono);font-size:.44rem;letter-spacing:.1em;
+  color:var(--gold);
+  animation:liveBlink 1.2s step-end infinite;
+}
+@keyframes liveBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── RESPONSIVE adjustments ── */
+@media(max-width:600px){
+  .countdown-card{padding:.8rem 1rem;gap:.8rem}
+  .cd-timer{font-size:1.25rem;min-width:72px}
+  .install-banner{padding:.55rem 1rem}
+}
