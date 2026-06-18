@@ -1,8 +1,8 @@
 /* =============================================
-   SERVICE WORKER — NØYNAY PWA  v0.1.2
+   SERVICE WORKER — NØYNAY PWA  v0.1.4
    ============================================= */
 
-const CACHE_NAME = 'noynay-v0.1.3';
+const CACHE_NAME = 'noynay-v0.1.4';
 
 const CACHE_FILES = [
   './',
