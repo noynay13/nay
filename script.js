@@ -29,6 +29,7 @@ let courses = [
   {id:7,day:5,start:'13:30',end:'16:30',code:'0365004-65',name:'ฉลาดคิด',nameEn:'Smart Thinking',room:'ส ห้อง145',teacher:'ณัฏฐกฤต ชัยอริยเมรี',credits:3,color:'f'},
 ];
 let nextId=8, editId=null, editMode=false, pinStr='', fq='';
+let _cdInterval = null; /* ย้ายมาไว้บนสุด เพราะ renderAll() เรียก startCountdown() ตั้งแต่ตอน init (บรรทัดท้ายไฟล์) ซึ่งเร็วกว่าตำแหน่งเดิมของ let ตัวนี้ ทำให้เกิด ReferenceError (TDZ) ทุกครั้งที่ renderAll() ถูกเรียก รวมถึงตอนกดบันทึก ทำให้ closeM() ที่อยู่หลัง renderAll() ไม่ถูกรันเลย */
 
 /* ── PERSIST ── */
 function save(){
@@ -539,8 +540,6 @@ document.addEventListener('click', e => {
    ══════════════════════════════════════════════ */
 
 /* ── COUNTDOWN TO NEXT CLASS ── */
-let _cdInterval = null;
-
 function _getNextClassInfo(){
   const now = new Date();
   const curMin = now.getHours()*60 + now.getMinutes();
